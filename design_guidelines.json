@@ -1,0 +1,114 @@
+{
+  "theme_strategy": "Light mode primary for both Student and Admin to convey clarity, authority, and distraction-free focus. Dark mode toggle available only for Admin. Pure stark white for Student exam canvas.",
+  "typography": {
+    "fonts": {
+      "heading": "Work Sans",
+      "body": "IBM Plex Sans",
+      "mono": "IBM Plex Mono",
+      "instruction": "Do not use Inter. Work Sans provides authoritative yet accessible headings. IBM Plex Sans provides excellent legibility for long exam questions. IBM Plex Mono for large timers and TKJ code snippets."
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl tracking-tight font-semibold",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-medium",
+      "h3": "text-xl sm:text-2xl font-medium",
+      "body": "text-base leading-relaxed",
+      "timer": "text-4xl sm:text-5xl font-mono font-bold tracking-tighter"
+    }
+  },
+  "colors": {
+    "archetype": "Swiss & High-Contrast (Archetype 4)",
+    "participant_exam": {
+      "background": "#FFFFFF",
+      "text": "#09090B",
+      "surface": "#F4F4F5",
+      "accent": "#0055FF",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "danger": "#EF4444"
+    },
+    "admin_dashboard": {
+      "background": "#FAFAFA",
+      "surface": "#FFFFFF",
+      "border": "#E4E4E7",
+      "text_primary": "#18181B",
+      "text_secondary": "#71717A"
+    },
+    "rules": "Color is Function Only. 95% of the UI should be monochrome. Color exists only to guide action or indicate status (e.g., green for 'Tersimpan ✓', red for 'Pelanggaran'). No full-screen gradients."
+  },
+  "layouts": {
+    "participant_landing": {
+      "type": "Split Screen (50/50)",
+      "left": "Minimalist form (Nama, Sekolah, Kelas, Token). Clean input fields with clear labels, huge spacing (p-12).",
+      "right": "Full height student image with soft brand overlay (bg-black/30). Covers entirely without gaps."
+    },
+    "participant_exam": {
+      "type": "Asymmetric Bento/Focus",
+      "grid": "grid-cols-1 md:grid-cols-12 gap-8 p-6 md:p-12 max-w-7xl mx-auto",
+      "main_content": "col-span-full md:col-span-9. Left-aligned question text, massive radio buttons for choices.",
+      "sidebar": "col-span-full md:col-span-3. Contains large timer, 'Sesi Diawasi' camera preview (top right), and Question Navigation Grid.",
+      "header": "Minimalist header with massive Progress Bar spanning full width at the very top (h-2 or h-3)."
+    },
+    "admin_dashboard": {
+      "type": "Sidebar + Content",
+      "sidebar": "256px fixed width, pure white surface, 1px right border.",
+      "content": "Top KPI metric strip (4 cards), followed by data tables spanning full width. Tight gaps (gap-4 or gap-6). Use CSS Grid for complex stats."
+    }
+  },
+  "components": {
+    "instructions_to_main_agent": [
+      "Use Shadcn UI primarily. DO NOT build complex components from scratch.",
+      "Radio Group (For TKJ & DISC): Use massive, easily clickable radio cards instead of tiny native radio circles. Add `hover:bg-zinc-50 border border-zinc-200` to the label container.",
+      "Progress Bar: Height must be prominent (e.g., `h-3`), fixed at top. Use Shadcn Progress.",
+      "Camera Preview Box: Square, fixed aspect ratio, with a red pulsing 'Sesi Diawasi' badge overlaid. Flat design, no glassmorphism.",
+      "Question Grid: Small square buttons (`w-10 h-10`). Gray/Outline for unanswered, Solid Dark Blue/Black for answered, subtle ring for current.",
+      "Admin Tables: Dense, border-collapse style with row hover effects. Include robust filters.",
+      "DISC Choice Interface: Forced choice requires distinct visual separation for 'Paling' (Most) and 'Kurang' (Least) across 4 statements. Use a dedicated card interface."
+    ],
+    "overrides": {
+      "cards": "For Student UI, use 'cardless' or perfectly flat surfaces with 1px `border-zinc-200` and no shadow to maintain a stark, focused environment. Admin cards can have subtle `shadow-sm`.",
+      "inputs": "Height `h-12` for participant forms, large text (text-lg)."
+    }
+  },
+  "motion": {
+    "rules": [
+      "Exam UI: Almost zero motion to prevent distraction. Only instant feedback or micro-transitions on radio selection.",
+      "Admin UI: Standard smooth transitions (`transition-transform 0.2s ease`).",
+      "Camera Badge: A subtle pulse animation (`animate-pulse`) on a tiny red dot next to 'Sesi Diawasi'."
+    ]
+  },
+  "visual_enhancers": {
+    "icons": "Use @phosphor-icons/react for their precise, clean aesthetic that matches the Swiss style. Keep icons minimal in the exam view.",
+    "surfaces": "Grid Borders for Admin tables. Solid Background for everything else. DO NOT use transparent backgrounds over content."
+  },
+  "accessibility": {
+    "contrast": "Strict adherence to WCAG AA. Text must be `text-zinc-900` on white. Placeholder text `text-zinc-500`.",
+    "interactions": "All choices in TKJ and DISC must have a large hit area (entire card clickable).",
+    "focus": "Clear focus rings (`focus:ring-2 focus:ring-black focus:outline-none`) on all interactive elements."
+  },
+  "media": {
+    "rules": "Never use placeholder URLs. Always use provided Unsplash images."
+  },
+  "image_urls": {
+    "landing_hero": {
+      "url": "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHwzfHxzdHVkZW50JTIwdGFraW5nJTIwb25saW5lJTIwZXhhbSUyMGZvY3VzZWR8ZW58MHx8fHwxNzg3MTEzNjkxfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Student intensely focused, representing the calm but serious nature of the exam. Use on the right side of the split-screen participant login.",
+      "category": "participant_login"
+    },
+    "admin_abstract_bg": {
+      "url": "https://images.unsplash.com/photo-1639322537228-f710d846310a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTN8MHwxfHNlYXJjaHwzfHxzZWN1cmUlMjB0ZWNobm9sb2d5JTIwYWJzdHJhY3QlMjBuZXR3b3JrfGVufDB8fHx8MTc4NzExMzY5MXww&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract secure tech node network. Can be used subtly for admin login background or empty states.",
+      "category": "admin_assets"
+    }
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You MUST NOT apply universal transition (e.g., transition: all).",
+    "Create depth through layered design elements with z-index hierarchy, but keep student exam view strictly flat.",
+    "All interactive and key informational elements MUST include a data-testid attribute.",
+    "Use sonner for toasts (/app/frontend/src/components/ui/sonner.jsx).",
+    "Prioritize optical alignment over geometrical alignment.",
+    "Never use generic centered layouts for long text; left-align exam questions for readability.",
+    "Ensure 'Tersimpan ✓' autosave indicator is clearly visible without being annoying.",
+    "Do not build HTML-based complex components. Use Shadcn for Select, Dropdown, Table, and Progress.",
+    "All .js/jsx files should follow clean, modern React patterns."
+  ]
+}
