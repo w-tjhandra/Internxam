@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import Landing from "@/pages/Landing";
+import Preparation from "@/pages/Preparation";
 import PreFlight from "@/pages/PreFlight";
 import ExamRoom from "@/pages/ExamRoom";
 import AdminLogin from "@/pages/admin/AdminLogin";
@@ -18,6 +19,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/preparation" element={<Preparation />} />
           <Route path="/preflight" element={<PreFlight />} />
           <Route path="/exam" element={<ExamRoom />} />
           <Route path="/admin/login" element={<AdminLogin />} />

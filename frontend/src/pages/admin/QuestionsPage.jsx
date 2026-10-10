@@ -14,16 +14,29 @@ const empty = { text: "", options: ["", "", "", ""], correct_index: 0, category:
 
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState([]);
-  const [discItems, setDiscItems] = useState([]);
+  const [scenarioAssessment, setScenarioAssessment] = useState({ items: [], indicators: [] });
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState(null);
   const [open, setOpen] = useState(false);
 
   const load = () => {
     api.get("/admin/questions").then((r) => setQuestions(r.data));
-    api.get("/admin/disc-items").then((r) => setDiscItems(r.data));
+    api.get("/admin/scenario-items").then((r) => setScenarioAssessment(r.data));
   };
   useEffect(load, []);
+
+  const importExcel = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const { data } = await api.post("/admin/questions/import", fd);
+      toast.success(`${data.count} soal berhasil diimpor`);
+      load();
+    } catch (err) { toast.error(errDetail(err)); }
+    e.target.value = null;
+  };
 
   const save = async () => {
     if (!form.text.trim() || form.options.some((o) => !o.trim())) {
@@ -59,7 +72,7 @@ export default function QuestionsPage() {
       <Tabs defaultValue="tkj">
         <TabsList>
           <TabsTrigger value="tkj" data-testid="tab-tkj">Soal TKJ ({questions.length})</TabsTrigger>
-          <TabsTrigger value="disc" data-testid="tab-disc">Item DISC ({discItems.length} grup)</TabsTrigger>
+          <TabsTrigger value="scenario" data-testid="tab-scenario">Asesmen Skenario ({scenarioAssessment.items.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tkj" className="mt-4">
@@ -68,6 +81,12 @@ export default function QuestionsPage() {
               <DialogTrigger asChild>
                 <Button data-testid="add-question-btn" className="bg-zinc-900 text-white hover:bg-zinc-800">+ Tambah Soal</Button>
               </DialogTrigger>
+              <Button asChild variant="outline" className="ml-2 cursor-pointer">
+                <label>
+                  Import Excel/CSV
+                  <input type="file" accept=".csv, .xlsx" className="hidden" onChange={importExcel} />
+                </label>
+              </Button>
               <DialogContent className="max-w-2xl">
                 <DialogHeader><DialogTitle>{editId ? "Edit Soal" : "Tambah Soal TKJ"}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
@@ -134,20 +153,32 @@ export default function QuestionsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="disc" className="mt-4">
-          <p className="text-sm text-zinc-500 mb-4">24 grup forced-choice. Setiap pernyataan terpetakan ke dimensi D / I / S / C. Jika sekolah memiliki instrumen berlisensi, item dapat diganti.</p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" data-testid="disc-items-list">
-            {discItems.map((item) => (
-              <div key={item.group_index} className="bg-white border border-zinc-200 p-4 shadow-sm">
-                <p className="text-xs uppercase tracking-wider text-zinc-400 mb-2">Grup {item.group_index + 1}</p>
-                {item.statements.map((s, si) => (
-                  <div key={si} className="flex items-center justify-between py-1 border-b border-zinc-50 last:border-0">
-                    <span className="text-sm">{s.text}</span>
-                    <span className="text-xs font-mono font-semibold text-zinc-400 ml-2">{s.dimension}</span>
+        <TabsContent value="scenario" className="mt-4">
+          <div className="border border-amber-200 bg-amber-50 p-4 mb-4 text-sm text-amber-900" data-testid="scenario-pilot-notice">
+            <p className="font-semibold">Versi pilot · {scenarioAssessment.version}</p>
+            <p>{scenarioAssessment.disclaimer}</p>
+            <p className="mt-1">Rubrik ditampilkan untuk review panitia/pembimbing; skor bukan ambang lulus dan bukan diagnosis.</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" data-testid="scenario-items-list">
+            {scenarioAssessment.items.map((item, itemIndex) => {
+              const indicator = scenarioAssessment.indicators.find((entry) => entry.id === item.indicator);
+              return (
+                <div key={item.id} className="bg-white border border-zinc-200 p-4 shadow-sm">
+                  <p className="text-xs uppercase tracking-wider text-zinc-400 mb-1">Skenario {itemIndex + 1} · {indicator?.label}</p>
+                  <p className="font-medium mb-3">{item.situation}</p>
+                  <div className="space-y-3">
+                    {item.options.map((option, optionIndex) => (
+                      <div key={optionIndex} className="border-t border-zinc-100 pt-2">
+                        <p className="text-sm">{option.text}</p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          Rubrik {option.score}/3 · {option.rationale}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </TabsContent>
       </Tabs>

@@ -24,6 +24,8 @@ export default function SettingsPage() {
         violation_threshold: Number(cfg.violation_threshold),
         require_seb: cfg.require_seb,
         seb_browser_exam_key: cfg.seb_browser_exam_key || "",
+        work_disc_enabled: cfg.work_disc_enabled,
+        work_disc_duration_minutes: 60,
       });
       setCfg(data);
       toast.success("Konfigurasi tersimpan");
@@ -48,9 +50,21 @@ export default function SettingsPage() {
       <div className="bg-white border border-zinc-200 p-6 shadow-sm space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <NumField label="Durasi TKJ (menit)" field="tkj_duration_minutes" />
-          <NumField label="Durasi DISC (menit)" field="disc_duration_minutes" />
+          <NumField label="Durasi Asesmen Skenario (menit)" field="disc_duration_minutes" />
           <NumField label="Jumlah Soal TKJ" field="tkj_question_count" hint="Diambil acak dari bank soal" />
           <NumField label="Ambang Pelanggaran" field="violation_threshold" hint="Auto-submit setelah N pelanggaran" />
+        </div>
+        <div className="border-t border-zinc-200 pt-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium">Babak ringkasan DISC berbasis situasi kerja</p>
+              <p className="text-sm text-zinc-500">
+                Wajib dikerjakan setelah asesmen skenario saat aktif. Durasi tetap 60 menit; waktu habis akan mengirim jawaban tersimpan.
+              </p>
+            </div>
+            <Switch data-testid="config-work-disc-enabled" checked={cfg.work_disc_enabled}
+              onCheckedChange={(v) => setCfg({ ...cfg, work_disc_enabled: v })} />
+          </div>
         </div>
         <div className="border-t border-zinc-200 pt-6">
           <div className="flex items-center justify-between">

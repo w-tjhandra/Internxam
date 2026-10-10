@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { ShieldCheck, SquaresFour, Key, ListChecks, ChartBar, Gear, SignOut } from "@phosphor-icons/react";
 
@@ -23,6 +24,22 @@ export default function AdminLayout() {
     });
   }, [nav]);
 
+  useEffect(() => {
+    if (!ready) return;
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/api/admin/ws/live`;
+    const ws = new WebSocket(wsUrl);
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === "exam_start") toast.success(`${msg.participant} ${msg.detail}`);
+        else if (msg.type === "exam_submit" || msg.type === "exam_complete") toast.info(`${msg.participant} ${msg.detail}`);
+        else if (msg.type === "exam_violation") toast.warning(`${msg.participant}: ${msg.detail}`);
+      } catch {}
+    };
+    return () => ws.close();
+  }, [ready]);
+
   const logout = () => {
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_user");
@@ -36,7 +53,7 @@ export default function AdminLayout() {
       <aside className="w-64 shrink-0 bg-white border-r border-zinc-200 flex flex-col fixed inset-y-0">
         <div className="flex items-center gap-2 px-6 h-16 border-b border-zinc-200">
           <ShieldCheck size={22} weight="fill" className="text-[#0055FF]" />
-          <span className="font-semibold tracking-tight">SecureCBT</span>
+          <span className="font-semibold tracking-tight">INTERNXAM</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {links.map(({ to, label, icon: Icon, end }) => (

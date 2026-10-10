@@ -17,6 +17,8 @@ export default function TokensPage() {
   const [tokens, setTokens] = useState([]);
   const [filter, setFilter] = useState("all");
   const [count, setCount] = useState(10);
+  const [type, setType] = useState("single");
+  const [maxUses, setMaxUses] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const load = () => {
@@ -28,7 +30,7 @@ export default function TokensPage() {
   const generate = async () => {
     setLoading(true);
     try {
-      const { data } = await api.post("/admin/tokens/generate", { count: Number(count) });
+      const { data } = await api.post("/admin/tokens/generate", { count: Number(count), type, max_uses: Number(maxUses) });
       toast.success(`${data.tokens.length} token berhasil dibuat`);
       load();
     } catch (e) { toast.error(errDetail(e)); }
@@ -58,8 +60,19 @@ export default function TokensPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Manajemen Token</h1>
         <div className="flex items-center gap-2">
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="single">Single</SelectItem>
+              <SelectItem value="group">Group</SelectItem>
+            </SelectContent>
+          </Select>
+          {type === "group" && (
+            <Input type="number" min={2} max={100} value={maxUses} onChange={(e) => setMaxUses(e.target.value)}
+              className="w-16" title="Kapasitas (Max Uses)" />
+          )}
           <Input type="number" min={1} max={500} value={count} onChange={(e) => setCount(e.target.value)}
-            className="w-24" data-testid="token-count-input" />
+            className="w-20" data-testid="token-count-input" title="Jumlah Token Dibuat" />
           <Button onClick={generate} disabled={loading} data-testid="generate-tokens-btn" className="bg-zinc-900 text-white hover:bg-zinc-800">
             {loading ? "Membuat..." : "Generate Token"}
           </Button>
@@ -80,7 +93,7 @@ export default function TokensPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wider text-zinc-400">
-              <th className="p-3">Token</th><th className="p-3">Status</th><th className="p-3">Peserta</th><th className="p-3">Dibuat</th><th className="p-3">Aksi</th>
+              <th className="p-3">Token</th><th className="p-3">Status</th><th className="p-3">Tipe</th><th className="p-3">Peserta</th><th className="p-3">Dibuat</th><th className="p-3">Aksi</th>
             </tr>
           </thead>
           <tbody data-testid="tokens-table-body">
@@ -88,7 +101,8 @@ export default function TokensPage() {
               <tr key={t.id} className="border-b border-zinc-100 hover:bg-zinc-50">
                 <td className="p-3 font-mono font-medium tracking-widest">{t.code}</td>
                 <td className="p-3"><span className={`px-2 py-0.5 text-xs font-medium ${badge[t.status]}`}>{t.status}</span></td>
-                <td className="p-3 text-zinc-600">{t.participant_name || "—"}</td>
+                <td className="p-3 text-zinc-600">{t.type === "group" ? `Grup (${t.usage_count}/${t.max_uses})` : "Single"}</td>
+                <td className="p-3 text-zinc-600">{t.type === "group" ? "Multi-user" : t.participant_name || "—"}</td>
                 <td className="p-3 text-zinc-400">{t.created_at?.slice(0, 16).replace("T", " ")}</td>
                 <td className="p-3">
                   {["unused", "active"].includes(t.status) && (

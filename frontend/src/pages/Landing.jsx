@@ -35,7 +35,7 @@ export default function Landing() {
         token: form.token.trim().toUpperCase(),
         name: form.name.trim(),
       }));
-      nav("/preflight");
+      nav("/preparation");
     } catch (err) {
       setError(errDetail(err));
     } finally {
@@ -48,14 +48,17 @@ export default function Landing() {
       <div className="flex flex-col justify-center px-8 sm:px-16 xl:px-24 py-12 bg-white">
         <div className="flex items-center gap-2 mb-12">
           <ShieldCheck size={28} weight="fill" className="text-[#0055FF]" />
-          <span className="font-semibold text-lg tracking-tight">SecureCBT</span>
+          <span className="font-semibold text-lg tracking-tight">INTERNXAM</span>
         </div>
         <h1 className="text-4xl sm:text-5xl tracking-tight font-semibold text-zinc-900 mb-3">
-          Ujian Online<br />TKJ + Psikotes DISC
+          Portal Ujian & Asesmen PKL
         </h1>
         <p className="text-zinc-500 mb-10 max-w-md">
           Masukkan data diri dan token ujian yang diberikan panitia. Sesi ini diawasi — pastikan kamera dan layar siap dibagikan.
         </p>
+        <div className="max-w-md border border-amber-200 bg-amber-50 p-4 mb-6 text-sm text-amber-900" role="note">
+          Sesi berisi tes kompetensi dan asesmen situasi PKL versi pilot. Jawaban skenario menjadi bahan diskusi, bukan diagnosis atau satu-satunya dasar keputusan. Jawaban tersimpan dan dapat dilihat panitia; saat ini sistem tidak menghapus hasil secara otomatis. Tanyakan kepada panitia tentang masa penyimpanan data.
+        </div>
         <form onSubmit={submit} className="space-y-5 max-w-md" data-testid="participant-entry-form">
           <div className="space-y-1.5">
             <Label htmlFor="name">Nama Lengkap</Label>
@@ -86,6 +89,10 @@ export default function Landing() {
         <a href="/admin/login" data-testid="admin-login-link" className="mt-12 text-xs text-zinc-400 hover:text-zinc-600 w-fit">
           Masuk sebagai admin →
         </a>
+        <div className="mt-auto pt-16 flex items-center gap-2 text-sm text-zinc-500">
+          <span>Powered by</span>
+          <img src="/AXELBIT.png" alt="Axelbit" className="h-8 object-contain" />
+        </div>
       </div>
       <div className="hidden lg:block relative">
         <img src={HERO} alt="Siswa fokus mengerjakan ujian" className="absolute inset-0 w-full h-full object-cover" />

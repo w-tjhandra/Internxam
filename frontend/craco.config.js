@@ -98,6 +98,12 @@ let webpackConfig = {
         ],
       };
 
+      // Suppress warnings about face-api require function
+      webpackConfig.ignoreWarnings = [
+        ...(webpackConfig.ignoreWarnings || []),
+        /Critical dependency: require function is used in a way in which dependencies cannot be statically extracted/,
+      ];
+
       // Add health check plugin to webpack if enabled
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);

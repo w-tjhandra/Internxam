@@ -35,7 +35,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm bg-white border border-zinc-200 p-8">
         <div className="flex items-center gap-2 mb-8">
           <ShieldCheck size={24} weight="fill" className="text-[#0055FF]" />
-          <span className="font-semibold tracking-tight">SecureCBT Admin</span>
+          <span className="font-semibold tracking-tight">INTERNXAM Admin</span>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight mb-6">Masuk Admin</h1>
         <form onSubmit={submit} className="space-y-4" data-testid="admin-login-form">
@@ -52,6 +52,10 @@ export default function AdminLogin() {
             {loading ? "Memproses..." : "Masuk"}
           </Button>
         </form>
+      </div>
+      <div className="absolute bottom-8 flex items-center gap-2 text-sm text-zinc-500">
+        <span>Powered by</span>
+        <img src="/AXELBIT.png" alt="Axelbit" className="h-8 object-contain" />
       </div>
     </div>
   );

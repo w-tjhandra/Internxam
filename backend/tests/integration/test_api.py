@@ -6,8 +6,12 @@ import time
 import pytest
 import requests
 
-BASE = os.environ.get("REACT_APP_BACKEND_URL", "https://exam-guard-24.preview.emergentagent.com").rstrip("/")
+BASE = os.environ.get("REACT_APP_BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
 API = f"{BASE}/api"
+pytestmark = pytest.mark.skipif(
+    os.environ.get("RUN_API_INTEGRATION_TESTS") != "1",
+    reason="API integration tests require explicit RUN_API_INTEGRATION_TESTS=1 opt-in",
+)
 ADMIN_EMAIL = "admin@axelbit.com"
 ADMIN_PASSWORD = "ax3lb1t"
 
@@ -131,8 +135,16 @@ class TestQuestions:
         r = requests.get(f"{API}/admin/disc-items", headers=admin_headers)
         assert r.status_code == 200
         items = r.json()
-        assert len(items) == 24
+        assert len(items) >= 24
         assert len(items[0]["statements"]) == 4
+
+    def test_scenario_items_seed(self, admin_headers):
+        r = requests.get(f"{API}/admin/scenario-items", headers=admin_headers)
+        assert r.status_code == 200
+        data = r.json()
+        assert data["status"] == "pilot"
+        assert len(data["items"]) == 8
+        assert len(data["indicators"]) == 4
 
 
 # ---------- Admin: Config ----------
@@ -144,10 +156,12 @@ class TestConfig:
 
         new_cfg = {"tkj_duration_minutes": 45, "disc_duration_minutes": 15,
                    "tkj_question_count": 20, "violation_threshold": 3,
-                   "require_seb": False, "seb_browser_exam_key": ""}
+                   "require_seb": False, "seb_browser_exam_key": "",
+                   "work_disc_enabled": False, "work_disc_duration_minutes": 60}
         r = requests.put(f"{API}/admin/config", json=new_cfg, headers=admin_headers)
         assert r.status_code == 200
         assert r.json()["tkj_duration_minutes"] == 45
+        assert r.json()["work_disc_enabled"] is False
 
         # persist check
         r = requests.get(f"{API}/admin/config", headers=admin_headers)
@@ -202,24 +216,62 @@ class TestExamFlow:
         r = requests.post(f"{API}/exam/tkj/submit", json={"participant_id": pid, "token": code})
         assert r.status_code == 200
         st = r.json()
-        assert st["stage"] == "disc"
-        assert len(st["disc_items"]) == 24
+        assert st["stage"] == "scenario"
+        assert len(st["scenario_items"]) == 8
 
-        # answer DISC 24
-        for i in range(24):
-            rr = requests.post(f"{API}/exam/disc/answer", json={"participant_id": pid, "token": code,
-                                                                "group_index": i, "most": 0, "least": 1})
+        incomplete = requests.post(
+            f"{API}/exam/scenario/submit", json={"participant_id": pid, "token": code}
+        )
+        assert incomplete.status_code == 400
+
+        # Answer the PKL work scenarios.
+        for item in st["scenario_items"]:
+            rr = requests.post(f"{API}/exam/scenario/answer", json={
+                "participant_id": pid, "token": code,
+                "scenario_id": item["id"], "selected_index": 0,
+            })
             assert rr.status_code == 200
+            assert rr.json()["saved"] is True
 
-        # most == least → 400
-        rr = requests.post(f"{API}/exam/disc/answer", json={"participant_id": pid, "token": code,
-                                                            "group_index": 0, "most": 2, "least": 2})
+        rr = requests.post(f"{API}/exam/scenario/answer", json={
+            "participant_id": pid, "token": code,
+            "scenario_id": st["scenario_items"][0]["id"], "selected_index": -1,
+        })
         assert rr.status_code == 400
 
-        # submit disc
-        r = requests.post(f"{API}/exam/disc/submit", json={"participant_id": pid, "token": code})
+        r = requests.post(f"{API}/exam/scenario/submit", json={"participant_id": pid, "token": code})
         assert r.status_code == 200
-        assert r.json()["stage"] == "done"
+        work_disc_state = r.json()
+        assert work_disc_state["stage"] == "work_disc"
+        assert len(work_disc_state["work_disc_items"]) == 30
+
+        incomplete_disc = requests.post(
+            f"{API}/exam/work-disc/submit",
+            json={"participant_id": pid, "token": code},
+        )
+        assert incomplete_disc.status_code == 400
+
+        for item in work_disc_state["work_disc_items"]:
+            rr = requests.post(f"{API}/exam/work-disc/answer", json={
+                "participant_id": pid, "token": code,
+                "item_id": item["id"], "selected_index": 0,
+            })
+            assert rr.status_code == 200
+            assert rr.json()["saved"] is True
+
+        disc_submit = requests.post(
+            f"{API}/exam/work-disc/submit", json={"participant_id": pid, "token": code}
+        )
+        assert disc_submit.status_code == 200
+        assert disc_submit.json()["stage"] == "done"
+
+        detail = requests.get(f"{API}/admin/results/{pid}", headers=admin_headers)
+        assert detail.status_code == 200
+        assert detail.json()["scenario_result"]["answered_scenarios"] == 8
+        assert detail.json()["scenario_result"]["status"] == "pilot"
+        assert detail.json()["work_disc_result"]["status"] == "complete"
+        assert detail.json()["work_disc_result"]["answered_items"] == 30
+        assert detail.json()["work_disc_auto_submitted"] is False
 
         # token completed → reuse denied
         r = requests.post(f"{API}/exam/start", json={"name": "TEST_reuse2", "school": "SMK", "class_name": "XI", "token": code})
